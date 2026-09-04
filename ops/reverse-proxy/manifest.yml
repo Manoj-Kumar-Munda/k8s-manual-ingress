@@ -22,7 +22,19 @@ data:
           proxy_cache_bypass $http_upgrade;
         }
       }
+
+
+      server {
+        listen 80;
+        server_name k8s-frontend.manojdev.live;
+
+        location / {
+          proxy_pass http://frontend-service.frontend-team.svc.cluster.local:3000;
+        }
+      }
     }
+
+
 ---
 apiVersion: apps/v1
 kind: Deployment
