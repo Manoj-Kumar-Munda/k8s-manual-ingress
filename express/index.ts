@@ -1,12 +1,26 @@
 import express from "express";
 import pg from "pg";
 import cors from "cors";
+import dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+function getDatabaseUrl(): string {
+  if (process.env.DATABASE_URL) {
+    return process.env.DATABASE_URL;
+  }
+  const host = process.env.DB_HOST ?? "db.default.svc.cluster.local";
+  const port = process.env.DB_PORT ?? "5432";
+  const database = process.env.DB_NAME ?? "postgres";
+  const user = process.env.DB_USER ?? "postgres";
+  const password = process.env.DB_PASSWORD ?? "postgres";
+  return `postgres://${user}:${password}@${host}:${port}/${database}`;
+}
+
 const pool = new pg.Pool({
-  connectionString: "postgres://postgres:postgres@db.default.svc.cluster.local:5432/postgres",
+  connectionString: getDatabaseUrl(),
 });
 
 app.get("/users", async (req, res) => {
