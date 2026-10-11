@@ -5,6 +5,29 @@ metadata:
   labels:
     name: backend-team
 ---
+# Backend app settings (ConfigMap) — safe to store in plain YAML
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: backend-team
+data:
+  DB_HOST: db.default.svc.cluster.local
+  DB_PORT: "5432"
+  DB_NAME: postgres
+  DB_USER: postgres
+  PORT: "3000"
+---
+# DB password for the backend (Secret)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-db-secret
+  namespace: backend-team
+type: Opaque
+stringData:
+  DB_PASSWORD: postgres
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,9 +45,14 @@ spec:
     spec:
       containers:
         - name: backend
-          image:  manojkr999/kubernetes-node:2
+          image: manojkr999/kubernetes-node:3
           ports:
             - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: backend-db-secret
 ---
 apiVersion: v1
 kind: Service

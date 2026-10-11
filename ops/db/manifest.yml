@@ -1,3 +1,21 @@
+# Non-sensitive Postgres settings (ConfigMap)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+data:
+  POSTGRES_DB: postgres
+  POSTGRES_USER: postgres
+---
+# Sensitive values (Secret) — lab only; do not commit real passwords in production repos
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+type: Opaque
+stringData:
+  POSTGRES_PASSWORD: postgres
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,11 +33,13 @@ spec:
       containers:
         - name: db
           image: postgres:latest
-          env:
-            - name: POSTGRES_PASSWORD
-              value: postgres
           ports:
             - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: postgres-config
+            - secretRef:
+                name: postgres-secret
 ---
 apiVersion: v1
 kind: Service
